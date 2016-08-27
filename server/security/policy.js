@@ -1,6 +1,29 @@
 import { BrowserPolicy } from "meteor/browser-policy-common";
 import { WebApp } from "meteor/webapp";
 
+/* eslint camelcase: 0 */
+
+// this is the localhost/ ROOT_URL to trust
+const rootUrl = __meteor_runtime_config__.ROOT_URL;
+
+//
+// external sites we trust
+//
+const trusted = [
+  "assets.reactioncommerce.com",
+  "*.facebook.com",
+  "*.fbcdn.net",
+  "connect.facebook.net",
+  "*.googleusercontent.com",
+  "fbcdn-profile-a.akamaihd.net",
+  "secure.gravatar.com",
+  "i0.wp.com",
+  "cdnjs.cloudflare.com",
+  "fonts.googleapis.com",
+  "fonts.gstatic.com",
+  "enginex.kadira.io",
+  "*.stripe.com"
+];
 
 /**
  * Set headers for Reaction CDN
@@ -12,33 +35,26 @@ WebApp.rawConnectHandlers.use((req, res, next) => {
   next();
 });
 
-
-/**
- * Set browser policies
- */
-if (process.env.NODE_ENV === "development") {
-  BrowserPolicy.content.allowOriginForAll("localhost:*");
-  BrowserPolicy.content.allowConnectOrigin("ws://localhost:*");
-  BrowserPolicy.content.allowConnectOrigin("http://localhost:*");
-  BrowserPolicy.content.allowConnectOrigin("https://localhost:*");
-  BrowserPolicy.framing.allowAll();
-}
-
-BrowserPolicy.content.allowOriginForAll("*.facebook.com");
-BrowserPolicy.content.allowOriginForAll("*.fbcdn.net");
-BrowserPolicy.content.allowOriginForAll("connect.facebook.net");
-BrowserPolicy.content.allowOriginForAll("*.googleusercontent.com");
-
-BrowserPolicy.content.allowImageOrigin("fbcdn-profile-a.akamaihd.net");
-BrowserPolicy.content.allowImageOrigin("secure.gravatar.com");
-BrowserPolicy.content.allowImageOrigin("i0.wp.com");
-
+//
+// disallow policies
+//
+BrowserPolicy.framing.disallow();
+BrowserPolicy.content.disallowInlineScripts();
+BrowserPolicy.content.disallowEval();
+BrowserPolicy.content.allowInlineStyles();
 BrowserPolicy.content.allowFontDataUrl();
-BrowserPolicy.content.allowOriginForAll("assets.reactioncommerce.com");
-BrowserPolicy.content.allowOriginForAll("cdnjs.cloudflare.com");
-BrowserPolicy.content.allowOriginForAll("fonts.googleapis.com");
-BrowserPolicy.content.allowOriginForAll("fonts.gstatic.com");
-BrowserPolicy.content.allowOriginForAll("fonts.gstatic.com");
+BrowserPolicy.content.disallowConnect();
 
-BrowserPolicy.content.allowOriginForAll("enginex.kadira.io");
-BrowserPolicy.content.allowOriginForAll("*.stripe.com");
+//
+// allow local ddp connection
+//
+BrowserPolicy.content.allowConnectOrigin(rootUrl);
+BrowserPolicy.content.allowConnectOrigin(rootUrl.replace("http", "ws"));
+
+//
+// allow trusted origins
+//
+for (let origin of trusted) {
+  origin = "https://" + origin;
+  BrowserPolicy.content.allowOriginForAll(origin);
+}
