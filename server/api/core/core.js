@@ -31,7 +31,7 @@ export default {
     // hook after init finished
     Hooks.Events.run("afterCoreInit", this);
 
-    Logger.info("Reaction.init() has run");
+    Logger.debug("Reaction.init() has run");
 
     return true;
   },
@@ -429,7 +429,7 @@ export default {
         }
         // Import package data
         this.Import.package(combinedSettings, shopId);
-        return Logger.info(`Initializing ${shop.name} ${pkgName}`);
+        return Logger.debug(`Initializing ${shop.name} plugin ${pkgName}`);
       }); // end shops
     });
 

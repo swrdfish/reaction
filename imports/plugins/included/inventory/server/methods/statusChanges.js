@@ -60,7 +60,7 @@ Meteor.methods({
     const defaultStatus = currentStatus || "new"; // default to the "new" status
     const backorderStatus = notFoundStatus || "backorder"; // change status to options object
     let reservationCount;
-    Logger.info(`Moving Inventory items from ${defaultStatus} to ${reservationStatus}`);
+    Logger.debug(`inventory/setStatus Moving Inventory items from ${defaultStatus} to ${reservationStatus}`);
 
     // update inventory status for cartItems
     for (const item of cartItems) {
@@ -84,14 +84,14 @@ Meteor.methods({
       const availableInventoryQty = availableInventory.count();
       let existingReservationQty = existingReservations.count();
 
-      Logger.info("totalRequiredQty", totalRequiredQty);
-      Logger.info("availableInventoryQty", availableInventoryQty);
+      Logger.debug("inventory/setStatus totalRequiredQty", totalRequiredQty);
+      Logger.debug("inventory/setStatus availableInventoryQty", availableInventoryQty);
 
       // if we don't have existing inventory we create backorders
       if (totalRequiredQty > availableInventoryQty) {
         // TODO put in a dashboard setting to allow backorder or altenate handler to be used
         const backOrderQty = Number(totalRequiredQty - availableInventoryQty - existingReservationQty);
-        Logger.info(`no inventory found, create ${backOrderQty} ${backorderStatus}`);
+        Logger.debug(`inventory/setStatus no inventory found, create ${backOrderQty} ${backorderStatus}`);
         // define a new reservation
         const reservation = {
           productId: item.productId,
@@ -107,7 +107,7 @@ Meteor.methods({
         existingReservationQty = backOrderQty;
       }
       // if we have inventory available, only create additional required reservations
-      Logger.debug("existingReservationQty", existingReservationQty);
+      Logger.debug("inventory/setStatus existingReservationQty", existingReservationQty);
       reservationCount = existingReservationQty;
       let newReservedQty;
       if (reservationStatus === "reserved" && defaultStatus === "new") {
@@ -120,8 +120,8 @@ Meteor.methods({
       let i = 1;
       while (i < newReservedQty) {
         // updated existing new inventory to be reserved
-        Logger.info(
-          `updating reservation status ${i} of ${newReservedQty - 1}/${totalRequiredQty} items.`);
+        Logger.debug(
+          `inventory/setStatus updating reservation status ${i} of ${newReservedQty - 1}/${totalRequiredQty} items.`);
         // we should be updating existing inventory here.
         // backorder process created additional backorder inventory if there
         // wasn't enough.
@@ -140,8 +140,8 @@ Meteor.methods({
         i++;
       }
     }
-    Logger.info(
-      `finished creating ${reservationCount} new ${reservationStatus} reservations`);
+    Logger.debug(
+      `inventory/setStatus finished creating ${reservationCount} new ${reservationStatus} reservations`);
     return reservationCount;
   },
   /**
@@ -195,7 +195,7 @@ Meteor.methods({
         i++;
       }
     }
-    Logger.info("inventory/clearReserve", newStatus);
+    Logger.debug("inventory/clearReserve", newStatus);
   },
   /**
    * inventory/clearReserve
@@ -276,7 +276,7 @@ Meteor.methods({
         const execute = Meteor.wrapAsync(batch.execute, batch);
         const inventoryBackorder = execute();
         const inserted = inventoryBackorder.nInserted;
-        Logger.info(`created ${inserted} backorder records for product ${newReservation.productId}, variant ${newReservation.variantId}`);
+        Logger.debug(`inventory/backorder created ${inserted} backorder records for product ${newReservation.productId}, variant ${newReservation.variantId}`);
         return inserted;
       }
     }
@@ -295,7 +295,7 @@ Meteor.methods({
     // TODO implement inventory/lowstock calculations
     // placeholder is here to give plugins a place to hook into
     //
-    Logger.info("inventory/lowStock");
+    Logger.debug("inventory/lowStock event");
   },
   /**
    * inventory/remove
