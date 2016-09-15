@@ -8,6 +8,7 @@ import { Reaction } from "/client/api";
 import Logger from "/client/modules/logger";
 import { ReactionProduct } from "/lib/api";
 import { Media } from "/lib/collections";
+import { Cart } from "/lib/collections";
 
 /**
  * productGridItems helpers
@@ -97,6 +98,14 @@ Template.productGridItems.helpers({
   positions() {
     const tag = ReactionProduct.getTag();
     return this.positions && this.positions[tag] || {};
+  },
+  inCart(productId) {
+    const storedCart = Cart.findOne();
+    if (typeof storedCart === "object" && storedCart.items) {
+      var result = $.grep(storedCart.items, function(e){ return e.productId == productId; });
+      if(result.length > 0) return true;
+    }
+    return false;
   }
 });
 
